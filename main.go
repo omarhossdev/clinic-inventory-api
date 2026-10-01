@@ -6,6 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Item struct {
+	ID       string `json:"id"` // Go field: ID   -> JSON key: "id"
+	Name     string `json:"name"`
+	Quantity int    `json:"quantity"`
+	Unit     string `json:"unit"`
+}
+
+// In-memory data store for now
+var inventory = []Item{
+	{ID: "1", Name: "Amoxicillin 500mg", Quantity: 150, Unit: "boxes"},
+	{ID: "2", Name: "Paracetamol 500mg", Quantity: 500, Unit: "tablets"},
+	{ID: "3", Name: "Oral Rehydration Salts", Quantity: 200, Unit: "sachets"},
+}
+
 func main() {
 	r := gin.Default()
 
@@ -15,6 +29,28 @@ func main() {
 			"status":  "success",
 			"message": "Welcome to my To-Do API!",
 		})
+	})
+
+	// Get Inventory
+	r.GET("/inventory", func(c *gin.Context) {
+		c.JSON(http.StatusOK, inventory)
+	})
+
+	// Fetch an item from inventory
+	r.GET("/inventory/:id", func(c *gin.Context) {
+		id := c.Param("id") // extract the id param
+
+		// 1. loop through inventory
+		// 2. find the item with the id
+		// 3. if found then return it otherwise error
+		for _, item := range inventory {
+			if item.ID == id {
+				c.JSON(http.StatusOK, item)
+				return
+			}
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
 	})
 
 	// Starting the server on port 8080

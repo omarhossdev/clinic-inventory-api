@@ -53,6 +53,48 @@ func main() {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
 	})
 
+	// Add a new item to inventory (POST)
+	r.POST("/inventory", func(c *gin.Context) {
+		var newItem Item
+
+		if err := c.ShouldBindJSON(&newItem); err != nil { // if there is an error/ the error is not empty but already found
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Add item to our inventory
+		inventory = append(inventory, newItem)
+
+		// Return the newly created item with 201 StatusCreated
+		c.JSON(http.StatusCreated, newItem)
+	})
+
+	// Update Existing data (PUT)
+	r.PUT("/inventory/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		var updatedItem Item
+
+		if err := c.ShouldBindJSON(&updatedItem); err != nil { // if there is an error from the request
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if updatedItem.ID == "" {
+			updatedItem.ID = id
+		}
+
+		for i, item := range inventory {
+			if item.ID == id {
+				inventory[i] = updatedItem
+
+				c.JSON(http.StatusOK, updatedItem)
+				return
+			}
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "no matched item"})
+	})
+
 	// Starting the server on port 8080
 	r.Run(":8080")
 }

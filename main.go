@@ -95,6 +95,22 @@ func main() {
 		c.JSON(http.StatusNotFound, gin.H{"error": "no matched item"})
 	})
 
+	// Deleting an item
+	r.DELETE("/inventory/:id", func(c *gin.Context) {
+		id := c.Param("id")
+
+		for i, item := range inventory {
+			if item.ID == id {
+				inventory = append(inventory[:i], inventory[i+1:]...) // add items from the start till that item, and include all items after that item
+
+				c.JSON(http.StatusOK, gin.H{"message": "Item deleted successfully"})
+				return
+			}
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "no matched items"})
+	})
+
 	// Starting the server on port 8080
 	r.Run(":8080")
 }
